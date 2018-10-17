@@ -1,0 +1,46 @@
+{
+  "name": "@evidnet/scv-r-base",
+  "version": "1.0.0",
+  "description": " Generate r-base docker image with SCV.",
+  "main": "index.ts",
+  "bin": {
+    "scv-r-base": "./bin/scv-r-base"
+  },
+  "scripts": {
+    "test": "ava -v",
+    "lint": "tslint \"src/**/*.ts\" \"test/**/*.ts\"",
+    "build": "npm-run-all lint",
+    "start": "ts-node index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/evidnet/scv-r-base.git"
+  },
+  "keywords": [
+    "r-base",
+    "docker",
+    "template",
+    "cli",
+    "scv"
+  ],
+  "author": "Haze Lee <hazelee@evidnet.co.kr>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/evidnet/scv-r-base/issues"
+  },
+  "homepage": "https://github.com/evidnet/scv-r-base#readme",
+  "devDependencies": {
+    "ava": "^1.0.0-rc.1",
+    "npm-run-all": "^4.1.3",
+    "prettier": "^1.14.3",
+    "rxjs-tslint": "^0.1.5",
+    "tslint": "^5.11.0",
+    "tslint-config-standard": "^8.0.1"
+  },
+  "dependencies": {
+    "@evidnet/scv-core": "1.0.3",
+    "rxjs": "^6.3.3",
+    "typescript": "^3.1.3",
+    "ts-node": "^7.0.1"
+  }
+}

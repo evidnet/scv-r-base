@@ -1,0 +1,81 @@
+# start from base
+FROM @base
+
+# install sed first.
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y sed
+
+# change APT Repository to Korean Mirror.
+# it'll be faster for fetch and download dependencies.
+RUN cp /etc/apt/sources.list /etc/apt/sources.list.old; \
+    sed -i 's/us.archive.ubuntu.com/mirror.kakao.com/g' /etc/apt/sources.list; \
+    sed -i 's/kr.archive.ubuntu.com/mirror.kakao.com/g' /etc/apt/sources.list; \ 
+    sed -i 's/archive.ubuntu.com/mirror.kakao.com/g' /etc/apt/sources.list;
+
+# Install every base dependencies
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential vim wget fort77 xorg-dev liblzma-dev \
+    libblas-dev gfortran gcc-multilib gobjc++ aptitude texlive-latex-base libcairo2-dev libjpeg62 \
+    python-dev libssl-dev libreadline-dev libcurl4-openssl-dev openjdk-8-jdk libssh2-1-dev libxml2-dev
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y libgit2-dev t1-xfree86-nonfree \
+    ttf-xfree86-nonfree ttf-xfree86-nonfree-syriac xfonts-75dpi xfonts-100dpi r-base \
+    qpdf xvfb xauth xfonts-base
+
+# Let's download R's source.
+# using substitute with @tag
+RUN mkdir /R && cd /R && \
+    wget https://cran.r-project.org/src/base/R-3/R-@tag.tar.gz && \
+    tar -xvzf R-@tag.tar.gz && \ 
+    mv R-@tag source && cd source && \
+    ./configure --prefix=/R/@tag --with-x=yes --enable-R-shlib=yes --with-cairo=yes && \
+    make -j8 && touch doc/NEWS.pdf && \
+    make install -j8 && \ 
+    rm -rf /usr/bin/R /usr/bin/Rscript && \
+    ln -s /R/@tag/bin/R /usr/bin/R && \
+    ln -s /R/@tag/bin/Rscript /usr/bin/Rscript
+
+# Set PATH
+ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
+ENV PATH $PATH:/R/@tag/bin
+
+# Configure Java in R
+RUN R CMD javareconf
+
+# Install Node.js and NVM
+RUN cd ~/ && wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash && \
+    export NVM_DIR="~/.nvm" && \
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; exit 0
+
+# 'source' command requires bash, not just sh.
+RUN /bin/bash -c 'source ~/.nvm/nvm.sh; nvm install --lts && nvm use --lts'
+
+RUN echo 'export NVM_DIR="~/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' > ~/.bash_profile
+
+WORKDIR /root/
+
+# Install R Dependencies!
+# Set Cran for Korean Mirror.
+RUN echo 'options(repos = c(CRAN = "https://cran.seoul.go.kr/"))' >.Rprofile
+RUN /bin/bash -c "echo $'install.packages(c(\"rJava\", \"devtools\", \"drat\"))\n\
+    drat::addRepo(\"OHDSI\")\n\
+    install.packages(\"BigKnn\")\n\
+    devtools::install_github(\"ohdsi/SqlRender\", ref=\"v1.5.0\")\n\
+    devtools::install_github(\"ohdsi/DatabaseConnector\", ref=\"v2.0.5\")\n\
+    devtools::install_github(\"ohdsi/OhdsiRTools\", ref=\"v1.5.5\")\n\
+    devtools::install_github(\"ohdsi/FeatureExtraction\", ref=\"v2.0.2\")\n\
+    devtools::install_github(\"ohdsi/CohortMethod\")\n\
+    devtools::install_github(\"ohdsi/EmpiricalCalibration\", ref=\"v1.3.6\")\n\
+    devtools::install_github(\"ohdsi/PatientLevelPrediction\", ref=\"v2.0.5\")' > dependencyInstall.R"
+
+RUN Rscript dependencyInstall.R
+RUN rm -rf dependencyInstall.R
+
+# Add Graphical Support for PNG plot
+ENV DISPLAY ":0"
+RUN /bin/bash -c "echo $'#!/bin/sh -e\n\
+    Xvfb :0 -ac -screen 0 1960x2000x24 &\n\
+    exit 0' > /etc/rc.local"
+RUN chmod 755 /etc/rc.local
+
+# Need to run rc.local.
+CMD ["/bin/bash", "-c", "/etc/rc.local; bash"]
