@@ -1,0 +1,5 @@
+#!/usr/bin/env ts-node
+'use strict'
+
+require('ts-node').register();
+require('./../index.ts').start();
