@@ -63,7 +63,7 @@ RUN /bin/bash -c "echo $'install.packages(c(\"rJava\", \"devtools\", \"drat\"))\
     devtools::install_github(\"ohdsi/DatabaseConnector\", ref=\"v2.0.5\")\n\
     devtools::install_github(\"ohdsi/OhdsiRTools\", ref=\"v1.5.5\")\n\
     devtools::install_github(\"ohdsi/FeatureExtraction\", ref=\"v2.0.2\")\n\
-    devtools::install_github(\"ohdsi/CohortMethod\")\n\
+    devtools::install_github(\"ohdsi/CohortMethod\", ref=\"v2.6.2\")\n\
     devtools::install_github(\"ohdsi/EmpiricalCalibration\", ref=\"v1.3.6\")\n\
     devtools::install_github(\"ohdsi/Achilles\")\n\
     devtools::install_github(\"ohdsi/PatientLevelPrediction\", ref=\"v2.0.5\")' > dependencyInstall.R"
