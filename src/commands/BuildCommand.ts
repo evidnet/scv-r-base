@@ -1,7 +1,4 @@
-import { BuildImageCommand } from '@evidnet/scv-core'
-
-type TagCallback = ((tag: string) => string)
-type TagValue = string | TagCallback
+import { BuildImageCommand, TagValue, OptionModel } from '@evidnet/scv-core'
 
 export class BuildCommand extends BuildImageCommand {
   substituteMap: Map<string, TagValue> = new Map<string, TagValue>([
@@ -14,6 +11,10 @@ export class BuildCommand extends BuildImageCommand {
   imageName: string = 'evidnet/r-base'
 
   dockerFile: string = './assets/Dockerfile.template'
+
+  getOptions (): Array<OptionModel> {
+    return []
+  }
 
   getCommandAlias (): string {
     return 'b'
