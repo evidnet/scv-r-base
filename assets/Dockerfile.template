@@ -37,6 +37,7 @@ RUN mkdir /R && cd /R && \
 # Set PATH
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
 ENV PATH $PATH:/R/@tag/bin
+ENV GITHUB_PAT @token
 
 # Configure Java in R
 RUN R CMD javareconf
