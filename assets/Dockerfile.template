@@ -13,13 +13,12 @@ RUN cp /etc/apt/sources.list /etc/apt/sources.list.old; \
     sed -i 's/archive.ubuntu.com/mirror.kakao.com/g' /etc/apt/sources.list;
 
 # Install every base dependencies
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential vim wget fort77 xorg-dev liblzma-dev \
-    libblas-dev gfortran gcc-multilib gobjc++ aptitude texlive-latex-base libcairo2-dev libjpeg62 \
-    python-dev libssl-dev libreadline-dev libcurl4-openssl-dev openjdk-8-jdk libssh2-1-dev libxml2-dev
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y libgit2-dev t1-xfree86-nonfree \
-    ttf-xfree86-nonfree ttf-xfree86-nonfree-syriac xfonts-75dpi xfonts-100dpi r-base \
-    qpdf xvfb xauth xfonts-base
+# Caution: Install libgit2-dev after libcurl4-openssl-dev cause of dependency issue.
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y build-essential vim wget fort77 \
+    xorg-dev liblzma-dev libblas-dev gfortran gcc-multilib gobjc++ aptitude texlive-latex-base libcairo2-dev libjpeg62 \
+    python-dev libssl-dev libreadline-dev libcurl4-openssl-dev openjdk-8-jdk libssh2-1-dev libxml2-dev && apt-get install -y libgit2-dev
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y t1-xfree86-nonfree \
+    ttf-xfree86-nonfree ttf-xfree86-nonfree-syriac xfonts-75dpi xfonts-100dpi r-base
 
 # Let's download R's source.
 # using substitute with @tag
@@ -56,7 +55,7 @@ WORKDIR /root/
 
 # Install R Dependencies!
 # Set Cran for Korean Mirror.
-RUN echo 'options(repos = c(CRAN = "https://cran.seoul.go.kr/"))' >.Rprofile
+RUN echo 'options(repos = c(CRAN = "https://cran.seoul.go.kr/"), bitmapType = "cairo")' >.Rprofile
 RUN /bin/bash -c "echo $'install.packages(c(\"rJava\", \"devtools\", \"drat\"))\n\
     drat::addRepo(\"OHDSI\")\n\
     install.packages(\"BigKnn\")\n\
@@ -72,12 +71,5 @@ RUN /bin/bash -c "echo $'install.packages(c(\"rJava\", \"devtools\", \"drat\"))\
 RUN Rscript dependencyInstall.R
 RUN rm -rf dependencyInstall.R
 
-# Add Graphical Support for PNG plot
-ENV DISPLAY ":0"
-RUN /bin/bash -c "echo $'#!/bin/sh -e\n\
-    Xvfb :0 -ac -screen 0 1960x2000x24 &\n\
-    exit 0' > /etc/rc.local"
-RUN chmod 755 /etc/rc.local
-
 # Need to run rc.local.
-CMD ["/bin/bash", "-c", "/etc/rc.local; bash"]
+CMD ["/bin/bash"]
