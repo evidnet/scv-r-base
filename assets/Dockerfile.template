@@ -56,17 +56,32 @@ WORKDIR /root/
 # Install R Dependencies!
 # Set Cran for Korean Mirror.
 RUN echo 'options(repos = c(CRAN = "https://cran.seoul.go.kr/"), bitmapType = "cairo")' >.Rprofile
-RUN /bin/bash -c "echo $'install.packages(c(\"rJava\", \"devtools\", \"drat\"))\n\
-    drat::addRepo(\"OHDSI\")\n\
-    install.packages(\"BigKnn\")\n\
-    devtools::install_github(\"ohdsi/SqlRender\", ref=\"v1.5.0\")\n\
-    devtools::install_github(\"ohdsi/DatabaseConnector\", ref=\"v2.0.5\")\n\
-    devtools::install_github(\"ohdsi/OhdsiRTools\", ref=\"v1.5.5\")\n\
-    devtools::install_github(\"ohdsi/FeatureExtraction\", ref=\"v2.0.2\")\n\
-    devtools::install_github(\"ohdsi/CohortMethod\", ref=\"v2.6.2\")\n\
-    devtools::install_github(\"ohdsi/EmpiricalCalibration\", ref=\"v1.3.6\")\n\
-    devtools::install_github(\"ohdsi/Achilles\")\n\
-    devtools::install_github(\"ohdsi/PatientLevelPrediction\", ref=\"v2.0.5\")' > dependencyInstall.R"
+
+# Seperate Installation script for v2.5.x and v2.6.x
+RUN /bin/bash -c "if [ '@atlas' == '2.5' ]; then echo $'install.packages(c(\"rJava\", \"devtools\", \"drat\"))\n\
+  drat::addRepo(\"OHDSI\")\n\
+  install.packages(\"BigKnn\")\n\
+  devtools::install_github(\"ohdsi/SqlRender\", ref=\"v1.5.0\")\n\
+  devtools::install_github(\"ohdsi/DatabaseConnector\", ref=\"v2.0.5\")\n\
+  devtools::install_github(\"ohdsi/OhdsiRTools\", ref=\"v1.5.5\")\n\
+  devtools::install_github(\"ohdsi/FeatureExtraction\", ref=\"v2.0.2\")\n\
+  devtools::install_github(\"ohdsi/CohortMethod\", ref=\"v2.6.2\")\n\
+  devtools::install_github(\"ohdsi/EmpiricalCalibration\", ref=\"v1.3.6\")\n\
+  devtools::install_github(\"ohdsi/Achilles\")\n\
+  devtools::install_github(\"ohdsi/PatientLevelPrediction\", ref=\"v2.0.5\")' > dependencyInstall.R; fi"
+
+RUN /bin/bash -c "if [ '@atlas' == '2.6' ]; then echo $'install.packages(c(\"rJava\", \"devtools\", \"drat\"))\n\
+  drat::addRepo(\"OHDSI\")\n\
+  library(devtools)\n\
+  install.packages(\"SqlRender\")\n\
+  install_github(\"ohdsi/DatabaseConnector\", ref = \"v2.2.0\")\n\
+  install_github(\"ohdsi/OhdsiSharing\", ref = \"v0.1.3\")\n\
+  install_github(\"ohdsi/FeatureExtraction\", ref = \"v2.1.5\")\n\
+  install_github(\"ohdsi/CohortMethod\", ref = \"v3.0.1\")\n\
+  install_github(\"ohdsi/EmpiricalCalibration\", ref = \"v1.3.6\")\n\
+  install.packages(\"MethodEvaluation\")\n\
+  devtools::install_github(\"ohdsi/Achilles\")\n\
+  devtools::install_github(\"ohdsi/PatientLevelPrediction\", ref=\"v3.0.0\")' > dependencyInstall.R; fi"
 
 RUN Rscript dependencyInstall.R
 RUN rm -rf dependencyInstall.R
